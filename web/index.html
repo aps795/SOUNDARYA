@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOUNDARYA // Personal AI Operating Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #07090f;
+      --panel-bg: rgba(14, 18, 28, 0.78);
+      --card-bg: rgba(22, 28, 44, 0.7);
+      --cyan: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --violet: #9d4edd;
+      --violet-glow: rgba(157, 78, 221, 0.35);
+      --text: #f0f4fc;
+      --text-muted: #8e9aaf;
+      --danger: #ff0054;
+      --warning: #ffb703;
+      --success: #00f5d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(157, 78, 221, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+      color: var(--text);
+      font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top HUD Navigation Bar */
+    header {
+      background: rgba(10, 13, 22, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.25);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 14px;
+      height: 14px;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+      transform: rotate(45deg);
+    }
+
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .top-meta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .meta-chip {
+      background: var(--card-bg);
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #c77dff;
+    }
+
+    .status-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 5px 14px;
+      border-radius: 6px;
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      padding: 18px 24px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Glassmorphism Panel */
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(0, 229, 255, 0.22);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Left Column */
+    .orb-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #orbCanvas {
+      width: 250px;
+      height: 250px;
+    }
+
+    .orb-state-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      margin-top: -15px;
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    /* Voice Subsystem Box */
+    .voice-box {
+      background: rgba(12, 16, 26, 0.85);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: var(--cyan);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00b4d8, #9d4edd);
+      border: none;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #00e5ff, #b5179e);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+    }
+
+    .btn-ptt.active {
+      background: rgba(0, 245, 212, 0.25);
+      border-color: var(--success);
+      color: var(--success);
+      box-shadow: 0 0 15px rgba(0, 245, 212, 0.5);
+      animation: pulseBorder 1s infinite alternate;
+    }
+
+    @keyframes pulseBorder {
+      from { box-shadow: 0 0 8px rgba(0, 245, 212, 0.4); }
+      to { box-shadow: 0 0 20px rgba(0, 245, 212, 0.8); }
+    }
+
+    .voice-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Telemetry Panel */
+    .telemetry-card {
+      background: rgba(12, 16, 26, 0.85);
+      border: 1px solid rgba(157, 78, 221, 0.25);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .meter-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .meter-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .meter-val {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .progress-track {
+      background: #101420;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+      width: 0%;
+      transition: width 0.5s ease;
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    .telemetry-sub {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .telemetry-chip {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Right Column: Workspaces */
+    .workspace-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Tab Switcher */
+    .tabs-header {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.25);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 1px;
+    }
+
+    .tab-btn:hover {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.08);
+    }
+
+    .tab-btn.active {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .tab-content {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: flex;
+    }
+
+    /* Terminal & Chat */
+    .chat-transcript {
+      flex: 1;
+      min-height: 380px;
+      max-height: 480px;
+      overflow-y: auto;
+      background: #090c14;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-bubble {
+      padding: 12px 16px;
+      border-radius: 8px;
+      max-width: 82%;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble-assistant {
+      align-self: flex-start;
+      background: rgba(16, 22, 36, 0.9);
+      border-left: 3px solid var(--cyan);
+      border-top: 1px solid rgba(0, 229, 255, 0.2);
+      border-right: 1px solid rgba(0, 229, 255, 0.1);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .bubble-user {
+      align-self: flex-end;
+      background: rgba(157, 78, 221, 0.15);
+      border-right: 3px solid var(--violet);
+      border-top: 1px solid rgba(157, 78, 221, 0.2);
+      border-left: 1px solid rgba(157, 78, 221, 0.1);
+      border-bottom: 1px solid rgba(157, 78, 221, 0.1);
+    }
+
+    .bubble-sender {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .bubble-assistant .bubble-sender {
+      color: var(--cyan);
+    }
+
+    .bubble-user .bubble-sender {
+      color: #c77dff;
+    }
+
+    /* Quick Pills */
+    .quick-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      background: rgba(18, 24, 38, 0.8);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pill:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: rgba(0, 229, 255, 0.12);
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    /* Input Bar */
+    .input-bar {
+      display: flex;
+      gap: 10px;
+      background: rgba(12, 16, 26, 0.9);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      border-radius: 10px;
+      padding: 6px 8px;
+    }
+
+    .input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.05rem;
+      padding: 6px 10px;
+    }
+
+    .input-field::placeholder {
+      color: #556075;
+    }
+
+    /* App Registry List */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .app-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .app-card:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .app-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .app-card-cat {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(157, 78, 221, 0.2);
+      color: #c77dff;
+      text-transform: uppercase;
+    }
+
+    .app-card-aliases {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Memory Vault */
+    .memory-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(12, 16, 26, 0.85);
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .memory-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .text-input {
+      background: #0d111d;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .text-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+
+    .memory-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .memory-card {
+      background: var(--card-bg);
+      border-left: 3px solid var(--violet);
+      border-top: 1px solid rgba(157, 78, 221, 0.2);
+      border-right: 1px solid rgba(157, 78, 221, 0.1);
+      border-bottom: 1px solid rgba(157, 78, 221, 0.1);
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+
+    .memory-card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .memory-card-title {
+      font-weight: 700;
+      color: #c77dff;
+      font-size: 0.95rem;
+    }
+
+    /* Security Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-card {
+      background: #0f1322;
+      border: 2px solid var(--warning);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 30px rgba(255, 183, 3, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: modalPop 0.25s ease;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation HUD -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon"></div>
+      <div>
+        <span class="brand-title">SOUNDARYA</span>
+        <span class="brand-subtitle">AI Operating Assistant</span>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div class="meta-chip" id="clockDisplay">00:00:00 UTC</div>
+      <div class="meta-chip" id="engineDisplay">ENGINE: LOCAL KERNEL</div>
+      <div class="status-badge" id="systemStatusBadge">STATUS: IDLE</div>
+    </div>
+  </header>
+
+  <!-- Main Grid Dashboard -->
+  <main>
+    <!-- Left Column: Holographic AI Core & Hardware Telemetry -->
+    <div class="glass-panel">
+      <!-- AI Core Orb Canvas -->
+      <div class="orb-container">
+        <canvas id="orbCanvas" width="250" height="250"></canvas>
+        <div class="orb-state-label" id="orbStateLabel">STANDBY</div>
+      </div>
+
+      <!-- Voice Subsystem Controls -->
+      <div class="voice-box">
+        <div class="section-title">
+          <span>Voice Subsystem</span>
+          <span style="font-size: 0.7rem; color: #8e9aaf;" id="micStatusText">MIC: READY</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ptt" id="btnPtt" onclick="togglePushToTalk()">
+            <span id="pttIcon">🎤</span> <span id="pttLabel">Push to Talk</span>
+          </button>
+          <button class="btn" id="btnAudioToggle" onclick="toggleAudioOutput()">
+            🔊 Voice Out
+          </button>
+        </div>
+        <div class="voice-toggle-row">
+          <span>Continuous Listening:</span>
+          <input type="checkbox" id="chkContinuous" onchange="toggleContinuous(this.checked)" style="accent-color: var(--cyan); cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- Live Hardware Telemetry Monitor -->
+      <div class="telemetry-card">
+        <div class="section-title">Hardware Telemetry</div>
+        
+        <!-- CPU Meter -->
+        <div class="meter-row">
+          <div class="meter-label-row">
+            <span>CPU LOAD</span>
+            <span class="meter-val" id="cpuVal">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="cpuBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- RAM Meter -->
+        <div class="meter-row">
+          <div class="meter-label-row">
+            <span>RAM USAGE</span>
+            <span class="meter-val" id="ramVal">0% (0/0 GB)</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="ramBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Disk Meter -->
+        <div class="meter-row">
+          <div class="meter-label-row">
+            <span>DISK FREE</span>
+            <span class="meter-val" id="diskVal">0 GB free</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="diskBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="telemetry-sub">
+          <div class="telemetry-chip" id="batteryVal">BATTERY: 100%</div>
+          <div class="telemetry-chip" id="uptimeVal">UPTIME: 0h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Workspaces -->
+    <div class="glass-panel workspace-panel">
+      <!-- Tabs Switcher -->
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('tab-terminal', this)">◈ TERMINAL & CHAT</button>
+        <button class="tab-btn" onclick="switchTab('tab-apps', this)">◈ APP REGISTRY</button>
+        <button class="tab-btn" onclick="switchTab('tab-memory', this)">◈ MEMORY VAULT</button>
+      </div>
+
+      <!-- Tab 1: Terminal & Chat -->
+      <div class="tab-content active" id="tab-terminal">
+        <div class="chat-transcript" id="chatTranscript">
+          <!-- Initial Welcome Message -->
+          <div class="chat-bubble bubble-assistant">
+            <div class="bubble-sender">◈ SOUNDARYA</div>
+            <div>Online and calibrated. Systems operating at full efficiency. How may I assist you, Commander?</div>
+          </div>
+        </div>
+
+        <!-- Quick Command Pills -->
+        <div class="quick-pills">
+          <div class="pill" onclick="sendQuickCommand('Chrome kholo')">Chrome kholo</div>
+          <div class="pill" onclick="sendQuickCommand('Downloads folder open karo')">Downloads folder open karo</div>
+          <div class="pill" onclick="sendQuickCommand('System status batao')">System status batao</div>
+          <div class="pill" onclick="sendQuickCommand('Aaj ka schedule batao')">Aaj ka schedule</div>
+          <div class="pill" onclick="sendQuickCommand('Notes mein search karo')">Notes search</div>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="input-bar">
+          <input type="text" class="input-field" id="userCommandInput" placeholder="Command or inquiry... (e.g. 'Chrome kholo', 'system status batao')" onkeydown="if(event.key==='Enter') executeCommand()">
+          <button class="btn btn-primary" style="flex: 0 0 110px;" onclick="executeCommand()">TRANSMIT</button>
+          <button class="btn" style="flex: 0 0 44px; font-size: 1.1rem;" onclick="togglePushToTalk()">🎤</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: App Registry -->
+      <div class="tab-content" id="tab-apps">
+        <div style="display: flex; gap: 10px; margin-bottom: 6px;">
+          <input type="text" class="text-input" id="appFilterInput" placeholder="Filter installed apps or aliases..." style="flex: 1;" oninput="filterApps()">
+          <button class="btn" onclick="fetchApps(true)" style="flex: 0 0 110px;">RESCAN APPS</button>
+        </div>
+        <div class="app-grid" id="appGrid">
+          <!-- Loaded dynamically -->
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Loading discovered applications...</div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Personal Memory Vault -->
+      <div class="tab-content" id="tab-memory">
+        <div class="memory-form">
+          <div class="section-title">Store Personal Memory</div>
+          <div class="memory-input-row">
+            <input type="text" class="text-input" id="memTitle" placeholder="Subject or Title..." style="flex: 2;">
+            <select class="text-input" id="memCat" style="flex: 1;">
+              <option value="note">Note</option>
+              <option value="fact">Fact</option>
+              <option value="goal">Goal</option>
+              <option value="instruction">Instruction</option>
+            </select>
+          </div>
+          <input type="text" class="text-input" id="memContent" placeholder="Detailed personal memory information...">
+          <button class="btn btn-primary" onclick="saveMemory()">SAVE TO PRIVATE DATABASE</button>
+        </div>
+
+        <input type="text" class="text-input" id="memSearchInput" placeholder="Search stored personal notes & facts..." oninput="searchMemories(this.value)">
+
+        <div class="memory-list" id="memoryList">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Security Confirmation Modal (Level 2) -->
+  <div class="modal-overlay" id="secModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>⚠️ LEVEL 2 AUTHORIZATION REQUIRED</span>
+      </div>
+      <div style="font-size: 0.95rem; color: #f0f4fc;" id="secModalMessage">
+        This action requires explicit user authorization before execution.
+      </div>
+      <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--cyan);" id="secModalParams">
+        ACTION: null
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 6px;">
+        <button class="btn" style="border-color: var(--danger); color: var(--danger);" onclick="resolveSecurity(false)">ABORT / REJECT</button>
+        <button class="btn btn-primary" onclick="resolveSecurity(true)">AUTHORIZE & EXECUTE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-Side Engine Scripts -->
+  <script>
+    // State management
+    let assistantState = 'IDLE';
+    let voiceOutputEnabled = true;
+    let isListening = false;
+    let recognition = null;
+    let installedApps = [];
+    let personalMemories = [];
+
+    // Holographic AI Core Canvas Animation
+    const canvas = document.getElementById('orbCanvas');
+    const ctx = canvas.getContext('2d');
+    let angleRing1 = 0;
+    let angleRing2 = 0;
+    let pulsePhase = 0;
+
+    function renderOrb() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const baseR = 75;
+
+      // Dynamic rotation speed based on state
+      if (assistantState === 'PROCESSING') {
+        angleRing1 += 0.06;
+        angleRing2 -= 0.08;
+      } else if (assistantState === 'EXECUTING') {
+        angleRing1 += 0.04;
+        angleRing2 -= 0.05;
+      } else if (assistantState === 'LISTENING') {
+        angleRing1 += 0.025;
+        angleRing2 -= 0.03;
+      } else {
+        angleRing1 += 0.01;
+        angleRing2 -= 0.013;
+      }
+
+      pulsePhase = (pulsePhase + 0.06) % (Math.PI * 2);
+      const pulseScale = 1.0 + 0.06 * Math.sin(pulsePhase);
+      const activeR = baseR * pulseScale;
+
+      // Color selection
+      let primaryColor = '#00e5ff';
+      let secondaryColor = '#9d4edd';
+
+      if (assistantState === 'ERROR') {
+        primaryColor = '#ff0054';
+        secondaryColor = '#ff5400';
+      } else if (assistantState === 'SPEAKING') {
+        primaryColor = '#9d4edd';
+        secondaryColor = '#00e5ff';
+      } else if (assistantState === 'LISTENING') {
+        primaryColor = '#00f5d4';
+        secondaryColor = '#00b4d8';
+      } else if (assistantState === 'EXECUTING') {
+        primaryColor = '#ffb703';
+        secondaryColor = '#9d4edd';
+      }
+
+      // 1. Ambient Glow
+      const glowGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, activeR * 1.3);
+      glowGrad.addColorStop(0, primaryColor + '44');
+      glowGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, activeR * 1.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Outer Dashed Cyber Ring
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angleRing1);
+      ctx.setLineDash([8, 8]);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = primaryColor;
+      ctx.beginPath();
+      ctx.arc(0, 0, activeR * 0.95, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Inner Counter-Rotating Segmented Arcs
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angleRing2);
+      ctx.setLineDash([]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = secondaryColor;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.arc(0, 0, activeR * 0.75, i * Math.PI / 2, i * Math.PI / 2 + 0.9);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 4. Acoustic Waveform Needles (Active when speaking/listening)
+      if (assistantState === 'SPEAKING' || assistantState === 'LISTENING') {
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 2;
+        const numBars = 16;
+        for (let i = 0; i < numBars; i++) {
+          const angle = (i / numBars) * Math.PI * 2;
+          const len = Math.random() * 20 + 5;
+          const r1 = activeR * 0.55;
+          const r2 = r1 + len;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
+          ctx.lineTo(cx + Math.cos(angle) * r2, cy + Math.sin(angle) * r2);
+          ctx.stroke();
+        }
+      }
+
+      // 5. Pulsing Nucleus
+      const coreR = activeR * 0.45;
+      const coreGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, coreR);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.5, primaryColor);
+      coreGrad.addColorStop(1, primaryColor + '22');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+      ctx.fill();
+
+      requestAnimationFrame(renderOrb);
+    }
+    renderOrb();
+
+    // State Changer
+    function setAssistantState(newState) {
+      assistantState = newState;
+      document.getElementById('orbStateLabel').innerText = newState;
+      const badge = document.getElementById('systemStatusBadge');
+      badge.innerText = `STATUS: ${newState}`;
+
+      if (newState === 'ERROR') {
+        badge.style.color = 'var(--danger)';
+        badge.style.borderColor = 'var(--danger)';
+      } else if (newState === 'SPEAKING') {
+        badge.style.color = '#c77dff';
+        badge.style.borderColor = 'var(--violet)';
+      } else if (newState === 'LISTENING') {
+        badge.style.color = 'var(--success)';
+        badge.style.borderColor = 'var(--success)';
+      } else {
+        badge.style.color = 'var(--cyan)';
+        badge.style.borderColor = 'var(--cyan)';
+      }
+    }
+
+    // Web Speech API Microphone setup
+    function setupWebSpeech() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn('SpeechRecognition API not available in this browser.');
+        return;
+      }
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN'; // Indian English / Hindi phonetic compatibility
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('btnPtt').classList.add('active');
+        document.getElementById('micStatusText').innerText = 'MIC: LISTENING...';
+        document.getElementById('micStatusText').style.color = 'var(--cyan)';
+        setAssistantState('LISTENING');
+      };
+
+      recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('userCommandInput').value = text;
+        executeCommand();
+      };
+
+      recognition.onerror = (e) => {
+        console.error('Speech recognition error:', e);
+        stopListening();
+      };
+
+      recognition.onend = () => {
+        stopListening();
+      };
+    }
+    setupWebSpeech();
+
+    function togglePushToTalk() {
+      if (!recognition) {
+        alert('Web Speech API is supported on Google Chrome, Edge, and Safari.');
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+        stopListening();
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          console.warn('Recognition start exception:', e);
+        }
+      }
+    }
+
+    function stopListening() {
+      isListening = false;
+      document.getElementById('btnPtt').classList.remove('active');
+      document.getElementById('micStatusText').innerText = 'MIC: READY';
+      document.getElementById('micStatusText').style.color = 'var(--text-muted)';
+      if (assistantState === 'LISTENING') {
+        setAssistantState('IDLE');
+      }
+    }
+
+    function toggleContinuous(enabled) {
+      if (enabled) {
+        alert('Continuous listening activated. SOUNDARYA will monitor speech continuously.');
+      }
+    }
+
+    function toggleAudioOutput() {
+      voiceOutputEnabled = !voiceOutputEnabled;
+      const btn = document.getElementById('btnAudioToggle');
+      if (voiceOutputEnabled) {
+        btn.innerText = '🔊 Voice Out';
+        btn.style.borderColor = 'var(--cyan)';
+        btn.style.color = 'var(--cyan)';
+      } else {
+        btn.innerText = '🔇 Voice Muted';
+        btn.style.borderColor = 'var(--danger)';
+        btn.style.color = 'var(--danger)';
+      }
+    }
+
+    function speakText(text) {
+      if (!voiceOutputEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const clean = text.replace(/[*_#`]/g, '');
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.rate = 1.05;
+      utterance.onstart = () => setAssistantState('SPEAKING');
+      utterance.onend = () => setAssistantState('IDLE');
+      utterance.onerror = () => setAssistantState('IDLE');
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Command Execution
+    async function executeCommand() {
+      const input = document.getElementById('userCommandInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      // Append user bubble
+      appendMessage('USER', text, false);
+      setAssistantState('PROCESSING');
+
+      try {
+        const response = await fetch('/api/command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: text })
+        });
+        const data = await response.json();
+        
+        appendMessage('SOUNDARYA', data.reply, true);
+        speakText(data.reply);
+      } catch (err) {
+        appendMessage('SOUNDARYA', `Error executing command: ${err}`, true);
+        setAssistantState('ERROR');
+      }
+    }
+
+    function sendQuickCommand(cmd) {
+      document.getElementById('userCommandInput').value = cmd;
+      executeCommand();
+    }
+
+    function appendMessage(sender, msg, isAssistant) {
+      const transcript = document.getElementById('chatTranscript');
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble ${isAssistant ? 'bubble-assistant' : 'bubble-user'}`;
+      
+      const senderDiv = document.createElement('div');
+      senderDiv.className = 'bubble-sender';
+      senderDiv.innerText = isAssistant ? '◈ ' + sender : sender + ' ◈';
+
+      const contentDiv = document.createElement('div');
+      contentDiv.innerText = msg;
+
+      bubble.appendChild(senderDiv);
+      bubble.appendChild(contentDiv);
+      transcript.appendChild(bubble);
+
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    // Real-Time Telemetry Polling
+    async function pollTelemetry() {
+      try {
+        const res = await fetch('/api/telemetry');
+        const data = await res.json();
+        
+        document.getElementById('cpuVal').innerText = `${data.cpu_percent}%`;
+        document.getElementById('cpuBar').style.width = `${data.cpu_percent}%`;
+
+        document.getElementById('ramVal').innerText = `${data.ram_percent}% (${data.ram_used_gb}/${data.ram_total_gb} GB)`;
+        document.getElementById('ramBar').style.width = `${data.ram_percent}%`;
+
+        document.getElementById('diskVal').innerText = `${data.disk_free_gb} GB free`;
+        document.getElementById('diskBar').style.width = `${data.disk_percent}%`;
+
+        if (data.battery_percent !== null && data.battery_percent !== undefined) {
+          const plug = data.battery_plugged ? '⚡ ' : '';
+          document.getElementById('batteryVal').innerText = `BATTERY: ${plug}${data.battery_percent}%`;
+        } else {
+          document.getElementById('batteryVal').innerText = 'POWER: AC Active';
+        }
+
+        document.getElementById('uptimeVal').innerText = `UPTIME: ${data.uptime_hours}h`;
+      } catch (e) {
+        console.warn('Telemetry polling error:', e);
+      }
+    }
+    setInterval(pollTelemetry, 2000);
+    pollTelemetry();
+
+    // Tab Switching
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+
+      if (tabId === 'tab-apps' && installedApps.length === 0) fetchApps();
+      if (tabId === 'tab-memory' && personalMemories.length === 0) fetchMemories();
+    }
+
+    // App Registry Tab
+    async function fetchApps(rescan = false) {
+      const grid = document.getElementById('appGrid');
+      grid.innerHTML = '<div style="color: var(--text-muted);">Scanning system applications...</div>';
+      try {
+        const res = await fetch(`/api/apps?rescan=${rescan}`);
+        installedApps = await res.json();
+        renderApps(installedApps);
+      } catch (e) {
+        grid.innerHTML = `<div style="color: var(--danger);">Failed to load apps: ${e}</div>`;
+      }
+    }
+
+    function renderApps(apps) {
+      const grid = document.getElementById('appGrid');
+      grid.innerHTML = '';
+      if (!apps || apps.length === 0) {
+        grid.innerHTML = '<div style="color: var(--text-muted);">No registered applications found. Click RESCAN APPS.</div>';
+        return;
+      }
+      apps.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'app-card';
+
+        let aliases = [];
+        try { aliases = JSON.parse(a.aliases); } catch(e) { aliases = []; }
+
+        card.innerHTML = `
+          <div class="app-card-title">
+            <span>${a.name}</span>
+            <span class="app-card-cat">${a.category}</span>
+          </div>
+          <div class="app-card-aliases">Aliases: ${aliases.slice(0, 3).join(', ')}</div>
+          <button class="btn btn-primary" style="margin-top: 6px; padding: 6px;" onclick="launchApp('${a.name}')">Launch</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterApps() {
+      const query = document.getElementById('appFilterInput').value.toLowerCase();
+      const filtered = installedApps.filter(a => a.name.toLowerCase().includes(query) || a.aliases.toLowerCase().includes(query));
+      renderApps(filtered);
+    }
+
+    async function launchApp(name) {
+      sendQuickCommand(`Open ${name}`);
+      switchTab('tab-terminal', document.querySelectorAll('.tab-btn')[0]);
+    }
+
+    // Personal Memory Tab
+    async function fetchMemories() {
+      try {
+        const res = await fetch('/api/memories');
+        personalMemories = await res.json();
+        renderMemories(personalMemories);
+      } catch (e) {
+        console.error('Failed to load memories:', e);
+      }
+    }
+
+    function renderMemories(items) {
+      const list = document.getElementById('memoryList');
+      list.innerHTML = '';
+      if (!items || items.length === 0) {
+        list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">No memories stored yet. Add notes or facts above!</div>';
+        return;
+      }
+      items.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.innerHTML = `
+          <div class="memory-card-header">
+            <span class="memory-card-title">[${m.category.toUpperCase()}] ${m.title}</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${m.created_at || ''}</span>
+          </div>
+          <div style="font-size: 0.9rem; color: var(--text);">${m.content}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function saveMemory() {
+      const title = document.getElementById('memTitle').value.trim();
+      const cat = document.getElementById('memCat').value;
+      const content = document.getElementById('memContent').value.trim();
+      if (!content) return;
+
+      await fetch('/api/memories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, category: cat, content })
+      });
+
+      document.getElementById('memTitle').value = '';
+      document.getElementById('memContent').value = '';
+      fetchMemories();
+    }
+
+    async function searchMemories(query) {
+      if (!query.trim()) {
+        renderMemories(personalMemories);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/memories?q=${encodeURIComponent(query)}`);
+        const results = await res.json();
+        renderMemories(results);
+      } catch (e) {
+        console.error('Memory search error:', e);
+      }
+    }
+
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clockDisplay').innerText = now.toTimeString().split(' ')[0] + ' LOCAL';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
