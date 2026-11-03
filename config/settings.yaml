@@ -1,0 +1,52 @@
+# SOUNDARYA System Configuration
+assistant:
+  name: "SOUNDARYA"
+  version: "1.0.0"
+  tagline: "Personal AI Operating Assistant"
+  default_language: "Hinglish" # Options: "English", "Hindi", "Hinglish"
+  wake_word: "soundarya"
+
+ui:
+  theme: "dark_futuristic"
+  primary_accent: "#00e5ff" # Electric Cyan
+  secondary_accent: "#9d4edd" # Cyber Violet
+  background_color: "#0a0c14" # Deep Obsidian
+  panel_background: "#121624" # Translucent Glass
+  card_background: "#1a1f32" # Elevated Panel
+  text_primary: "#f0f4fc"
+  text_secondary: "#8e9aaf"
+  window_width: 1280
+  window_height: 820
+  target_fps: 60
+
+ai:
+  default_provider: "fallback" # "openai", "ollama", "fallback"
+  fallback_enabled: true
+  temperature: 0.2
+  max_tokens: 500
+  supported_languages:
+    - "English"
+    - "Hindi"
+    - "Hinglish"
+
+voice:
+  tts_engine: "native" # "native", "pyttsx3", "piper"
+  stt_engine: "speech_recognition" # "speech_recognition", "whisper"
+  push_to_talk: true
+  continuous_listening: false
+  wake_word_sensitivity: 0.6
+  speech_rate: 180
+  speech_volume: 0.95
+
+system:
+  monitor_interval_sec: 1.0
+  auto_scan_apps_on_start: true
+  file_search_max_depth: 4
+  screenshot_directory: "data/screenshots"
+
+memory:
+  sqlite_path: "data/soundarya.db"
+  vector_store_path: "data/vector_store"
+  documents_path: "data/documents"
+  max_search_results: 5
+  auto_backup_on_exit: true

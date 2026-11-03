@@ -1,0 +1,46 @@
+# SOUNDARYA Security & Permissions Matrix
+levels:
+  level_1:
+    name: "SAFE"
+    description: "Read-only operations and non-destructive application launches"
+    requires_confirmation: false
+    allowed_actions:
+      - "app:open"
+      - "app:search"
+      - "app:list"
+      - "file:search"
+      - "file:read"
+      - "folder:open"
+      - "system:status"
+      - "system:time"
+      - "memory:read"
+      - "memory:search"
+      - "task:list"
+      - "web:search"
+
+  level_2:
+    name: "CONFIRMATION_REQUIRED"
+    description: "Potentially destructive or state-changing operations requiring explicit user approval"
+    requires_confirmation: true
+    allowed_actions:
+      - "file:delete"
+      - "file:move"
+      - "folder:delete"
+      - "process:kill"
+      - "memory:delete"
+      - "memory:clear_all"
+      - "system:screenshot"
+      - "script:execute"
+    prompt_message_template: "Are you sure you want to execute '{action}' with parameters: {params}?"
+
+  level_3:
+    name: "RESTRICTED"
+    description: "Critical system and security actions strictly prohibited or requiring manual terminal elevation"
+    requires_confirmation: true
+    blocked_by_default: true
+    prohibited_actions:
+      - "system:shutdown_force"
+      - "security:disable_firewall"
+      - "credentials:read_passwords"
+      - "filesystem:format_drive"
+      - "arbitrary_shell_injection"
